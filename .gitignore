@@ -1,2 +1,5 @@
 MNIST/*
 MNIST_BIN/*
+__pycache__/*
+mnist/*
+mnist_classified/*
