@@ -1,5 +1,5 @@
-from mnist_parse import ParseFile
 import os
+from mnist_parse import ParseFile
 
 def parse_file():
     train_img = "./MNIST/train-images-idx3-ubyte"

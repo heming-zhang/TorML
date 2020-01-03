@@ -1,9 +1,8 @@
+import os
 import numpy as np
 import struct as st
-import os
 
 class ParseFile():
-
     def __init__(self, 
                 img_file_name, 
                 label_file_name, 

@@ -1,7 +1,7 @@
 # TorML
 
 * Environment
-    * Ubuntu 18.04
+    * Linux based
     * python 3.6.8
     * packages: numpy, pytorch
 
@@ -11,6 +11,8 @@
     chmod 744 get_mnist.sh
     ./get_mnist.sh
     ```
+
+    * Run python code
 
 * Naming Convention
     * Class: ClassName
