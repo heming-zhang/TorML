@@ -5,9 +5,9 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.autograd import Variable
 from torch.utils.data import DataLoader
-from mnist_dataset import MnistLinearTrain, MnistLinearTest
+from mnist_nn_dataset import MnistNNTrain, MnistNNTest
 
-class MnistLinear():
+class MnistLoad():
     def __init__(self, batchsize, worker):
         self.batchsize = batchsize
         self.worker = worker
@@ -16,12 +16,12 @@ class MnistLinear():
     def load_data(self):
         batch_size = self.batch_size
         num_worker = self.num_worker
-        train_dataset = MnistLinearTrain()
+        train_dataset = MnistNNTrain()
         train_loader = DataLoader(dataset = train_dataset,
                     batch_size = batchsize,
                     shuffle = True,
                     num_workers = worker)
-        test_dataset = MnistLinearTest()
+        test_dataset = MnistNNTest()
         test_loader = DataLoader(dataset = test_dataset,
                     batch_size = batchsize,
                     shuffle = True,
@@ -47,15 +47,31 @@ class MnistNN(nn.Module):
         return y_pred
 
 class RunMnistNN():
-    def __init__(self, learning_rate, momentum):
+    def __init__(self, 
+                learning_rate, 
+                momentum, 
+                epoch_num,
+                batchsize,
+                worker):
         self.learning_rate = learning_rate
         self.momentum = momentum
+        self.epoch_num = epoch_num
+        self.bacthsize = batchsize
+        self.worker = worker
     
     def train_mnist_nn(self):
         learning_rate = self.learning_rate
         momentum = self.momentum
+        epoch_num = self.epoch_num
         model = MnistNN()
         criterion = torch.nn.CrossEntropyLoss()
         optimizer = torch.optim.SGD(model.parameters(),
                     lr = learning_rate, 
                     momentum = momentum)
+
+        batchsize = self.bacthsize
+        worker = self.worker
+        train_loader, test_loader = MnistLoad
+        for epoch in range(1, epoch_num + 1):
+            for i, data in enumerate()
+

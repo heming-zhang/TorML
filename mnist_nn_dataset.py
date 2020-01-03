@@ -2,7 +2,7 @@ import numpy as np
 from torch.utils.data import Dataset
 
 # custom yourself class dataset for dataloader
-class MnistLinearTrain(Dataset):
+class MnistNNTrain(Dataset):
     def __init__(self):
         train_img = np.load("./mnist/train_image.npy")
         train_label = np.load("./mnist/train_label.npy")
@@ -16,7 +16,7 @@ class MnistLinearTrain(Dataset):
     def __len__(self):
         return self.len
 
-class MnistLinearTest(Dataset):
+class MnistNNTest(Dataset):
     def __init__(self):
         test_img = np.load("./mnist/test_image.npy")
         test_label = np.load("./mnist/test_label.npy")
