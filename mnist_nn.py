@@ -2,6 +2,7 @@ import torch
 import torchvision
 import numpy as np
 import torch.nn as nn
+import matplotlib.pyplot as plt
 import torch.nn.functional as F
 from torch.autograd import Variable
 from torch.utils.data import DataLoader
@@ -49,14 +50,20 @@ class MnistNN(nn.Module):
 class MnistParameter():
     def __init__(self, 
                 learning_rate, 
-                momentum):
+                momentum,
+                cuda):
         self.learning_rate = learning_rate
         self.momentum = momentum
+        self.cuda = False
     
     def mnist_function(self):
         learning_rate = self.learning_rate
         momentum = self.momentum
-        model = MnistNN()
+        cuda = self.cuda
+        if cuda:
+            model = MnistNN().cuda()
+        else:
+            model = MnistNN()
         criterion = nn.CrossEntropyLoss()
         optimizer = torch.optim.SGD(model.parameters(),
                     lr = learning_rate, 
@@ -79,14 +86,17 @@ class RunMnistNN():
         criterion = self.criterion
         optimizer = self.optimizer
         train_loader = self.train_loader
-        # train data in certain epoch
+        # Train data in certain epoch
+        train_correct = 0
         for i, data in enumerate(train_loader):
             train_input, train_label = data
             train_input = np.array(train_input)
             train_label = np.array(train_label)
-            # wrap them in Variable
-            train_input = Variable(torch.Tensor(train_input), requires_grad = False)
-            train_label = Variable(torch.LongTensor(train_label), requires_grad = False)
+            # Wrap them in Variable
+            train_input = Variable(torch.Tensor(train_input),
+                        requires_grad = False)
+            train_label = Variable(torch.LongTensor(train_label),
+                        requires_grad = False)
             # Forward pass: Compute predicted y by passing x to the model
             y_pred = model(train_input)
             # Compute the train_loss with Cross-Entropy loss
@@ -95,7 +105,11 @@ class RunMnistNN():
             optimizer.zero_grad()
             train_loss.backward()
             optimizer.step()
-        return float(train_loss)
+            # Compute accuracy rate
+            _, train_pred = torch.max(y_pred.data, 1)
+            train_correct += (train_pred == train_label).sum()
+        train_accuracy = float(train_correct) / len(train_loader.dataset)
+        return float(train_loss), train_accuracy
     
     def test_mnist_nn(self):
         model = self.model
@@ -103,6 +117,8 @@ class RunMnistNN():
         criterion = self.criterion
         optimizer = self.optimizer
         test_loader = self.test_loader
+        # Test model accuracy after certain epoch
+        test_correct = 0
         for i, data in enumerate(test_loader):
             test_input, test_label = data
             test_input = np.array(test_input)
@@ -112,4 +128,31 @@ class RunMnistNN():
             # Forward pass: Compute predicted y by passing x to the model
             y_pred = model(test_input)
             test_loss = criterion(y_pred, test_label)
-        return float(test_loss)
+            _, test_pred = torch.max(y_pred, 1)
+            test_correct += (test_pred == test_label).sum()
+        test_accuracy = float(test_correct) / len(test_loader.dataset) 
+        return float(test_loss), test_accuracy
+
+class MnistNNPlot():
+    def __init__(self, train_accuracy_rate, 
+                test_accuracy_rate,
+                epoch_num):
+        self.train_accuracy_rate = train_accuracy_rate
+        self.test_accuracy_rate = test_accuracy_rate
+        self.epoch_num = epoch_num
+
+    def plot(self):
+        train_accuracy_rate = self.train_accuracy_rate
+        test_accuracy_rate = self.test_accuracy_rate
+        epoch_num = self.epoch_num
+        # Plot train and test accuracy rate
+        x = range(1, epoch_num + 1)
+        plt.plot(x, train_accuracy_rate, 
+                    label = "Mnist-NN-Train-Accuracy-Rate")
+        plt.plot(x, test_accuracy_rate, 
+                    label = "Mnist-NN-Test-Accuracy-Rate")
+        plt.xlabel("Epoch Time")
+        plt.ylabel("Accuracy Rate")
+        plt.title("Mnist-NN-Accuracy-Graph")
+        plt.legend()
+        plt.show()
