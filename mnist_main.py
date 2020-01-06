@@ -1,9 +1,9 @@
 import os
-from mnist_parse import ParseFile
 from mnist_nn import RunMnistNN
 from mnist_nn import MnistNNPlot
 from mnist_nn import MnistNNLoad
-from mnist_nn import MnistParameter
+from mnist_parse import ParseFile
+from mnist_nn import MnistNNParameter
 
 def parse_file():
     train_img = "./MNIST/train-images-idx3-ubyte"
@@ -31,7 +31,7 @@ def run_mnist_nn(nn_batchsize, nn_worker,
     train_loader, test_loader = MnistNNLoad(nn_batchsize, 
                 nn_worker).load_data()
     # Use Neural Network as training model
-    model, criterion, optimizer = MnistParameter(
+    model, criterion, optimizer = MnistNNParameter(
                 nn_learning_rate,
                 nn_momentum,
                 nn_cuda).mnist_function()
@@ -43,15 +43,18 @@ def run_mnist_nn(nn_batchsize, nn_worker,
                     criterion,
                     optimizer,
                     train_loader,
-                    test_loader).train_mnist_nn()
+                    test_loader,
+                    nn_cuda).train_mnist_nn()
         test_loss, test_accuracy = RunMnistNN(model,
                     criterion,
                     optimizer,
                     train_loader,
-                    test_loader).test_mnist_nn()
+                    test_loader,
+                    nn_cuda).test_mnist_nn()
         train_accuracy_rate.append(train_accuracy)
         test_accuracy_rate.append(test_accuracy)
-        print(epoch, train_accuracy, test_accuracy)
+        print("Epoch:{:d}, Train Accuracy:{:7.6f}, Test Accuracy:{:7.6f}"
+                    .format(epoch, train_accuracy, test_accuracy))
     # Make plot for Mnist-NN model
     MnistNNPlot(train_accuracy_rate,
                 test_accuracy_rate,
@@ -67,7 +70,7 @@ if __name__ == "__main__":
     nn_worker = 2
     nn_learning_rate = 0.01
     nn_momentum = 0.5
-    nn_cuda = False
-    nn_epoch_num = 20
+    nn_cuda = True
+    nn_epoch_num = 50
     run_mnist_nn(nn_batchsize, nn_worker, nn_learning_rate,
                 nn_momentum, nn_cuda, nn_epoch_num)

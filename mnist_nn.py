@@ -1,3 +1,4 @@
+import os
 import torch
 import torchvision
 import numpy as np
@@ -47,14 +48,14 @@ class MnistNN(nn.Module):
         y_pred = self.l5(out4)
         return y_pred
 
-class MnistParameter():
+class MnistNNParameter():
     def __init__(self, 
                 learning_rate, 
                 momentum,
                 cuda):
         self.learning_rate = learning_rate
         self.momentum = momentum
-        self.cuda = False
+        self.cuda = cuda
     
     def mnist_function(self):
         learning_rate = self.learning_rate
@@ -73,12 +74,13 @@ class MnistParameter():
 class RunMnistNN():
     def __init__(self, model, 
                 criterion, optimizer, 
-                train_loader, test_loader):
+                train_loader, test_loader, cuda):
         self.model = model
         self.criterion = criterion
         self.optimizer = optimizer
         self.train_loader = train_loader
         self.test_loader = test_loader
+        self.cuda = cuda
 
     def train_mnist_nn(self):
         model = self.model
@@ -86,6 +88,7 @@ class RunMnistNN():
         criterion = self.criterion
         optimizer = self.optimizer
         train_loader = self.train_loader
+        cuda = self.cuda
         # Train data in certain epoch
         train_correct = 0
         for i, data in enumerate(train_loader):
@@ -97,6 +100,9 @@ class RunMnistNN():
                         requires_grad = False)
             train_label = Variable(torch.LongTensor(train_label),
                         requires_grad = False)
+            if cuda:
+                train_input = train_input.cuda()
+                train_label = train_label.cuda()
             # Forward pass: Compute predicted y by passing x to the model
             y_pred = model(train_input)
             # Compute the train_loss with Cross-Entropy loss
@@ -117,6 +123,7 @@ class RunMnistNN():
         criterion = self.criterion
         optimizer = self.optimizer
         test_loader = self.test_loader
+        cuda = self.cuda
         # Test model accuracy after certain epoch
         test_correct = 0
         for i, data in enumerate(test_loader):
@@ -125,6 +132,9 @@ class RunMnistNN():
             test_label = np.array(test_label)
             test_input = Variable(torch.Tensor(test_input), requires_grad = False)
             test_label = Variable(torch.LongTensor(test_label), requires_grad = False)
+            if cuda:
+                test_input = test_input.cuda()
+                test_label = test_label.cuda()
             # Forward pass: Compute predicted y by passing x to the model
             y_pred = model(test_input)
             test_loss = criterion(y_pred, test_label)
@@ -153,6 +163,10 @@ class MnistNNPlot():
                     label = "Mnist-NN-Test-Accuracy-Rate")
         plt.xlabel("Epoch Time")
         plt.ylabel("Accuracy Rate")
+        plt.xticks(range(0, epoch_num + 1, 5))
         plt.title("Mnist-NN-Accuracy-Graph")
         plt.legend()
+        if os.path.isdir("./img") == False: 
+            os.mkdir("./img")
+        plt.savefig("./img/Mnist-NN-Accuracy" + str(epoch_num) + ".png")
         plt.show()
