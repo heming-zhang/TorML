@@ -33,15 +33,30 @@ class MnistCNNLoad():
 class MnistCNN(nn.Module):
     def __init__(self):
         super(MnistCNN, self).__init__()
-
+        # parameters: 
+        # input channels; 
+        # output channels; 
+        # filter size; 
+        # stride; 
+        # padding
+        self.conv1 = torch.nn.Sequential(torch.nn.Conv2d(1, 16, 5, 1, 4), # output space (16, 16, 16)
+                                        torch.nn.ReLU(),
+                                        torch.nn.MaxPool2d(2))
+        self.conv2 = torch.nn.Sequential(torch.nn.Conv2d(16, 30, 5, 1, 4), # output shape (30, 10, 10)
+                                        torch.nn.ReLU(),
+                                        torch.nn.MaxPool2d(2))
+        self.conv3 = torch.nn.Sequential(torch.nn.Conv2d(30, 40, 5, 1, 4), # output shape (40, 7, 7)
+                                        torch.nn.ReLU(),
+                                        torch.nn.MaxPool2d(2))
+        self.out = torch.nn.Linear(40*7*7, 10)
     
     # Use ReLU as activation function
     def forward(self, x):
-        out1 = F.relu(self.l1(x))
-        out2 = F.relu(self.l2(out1))
-        out3 = F.relu(self.l3(out2))
-        out4 = F.relu(self.l4(out3))
-        y_pred = self.l5(out4)
+        x = self.conv1(x)
+        x = self.conv2(x)
+        x = self.conv3(x)
+        x = x.view(x.size(0), -1) # flat (batch_size, 40 * 7 * 7)
+        y_pred = self.out(x)
         return y_pred
 
 class MnistCNNParameter():
@@ -51,38 +66,39 @@ class MnistCNNParameter():
                 cuda):
         self.learning_rate = learning_rate
         self.momentum = momentum
-        self.cuda = False
+        self.cuda = cuda
     
     def mnist_function(self):
         learning_rate = self.learning_rate
         momentum = self.momentum
         cuda = self.cuda
         if cuda:
-            model = MnistNN().cuda()
+            model = MnistCNN().cuda()
         else:
-            model = MnistNN()
+            model = MnistCNN()
         criterion = nn.CrossEntropyLoss()
         optimizer = torch.optim.SGD(model.parameters(),
                     lr = learning_rate, 
                     momentum = momentum)
         return model, criterion, optimizer
 
-class RunMnistNN():
-    def __init__(self, model, 
-                criterion, optimizer, 
-                train_loader, test_loader):
+class RunMnistCNN():
+    def __init__(self, model, criterion, optimizer, 
+                train_loader, test_loader, cuda):
         self.model = model
         self.criterion = criterion
         self.optimizer = optimizer
         self.train_loader = train_loader
         self.test_loader = test_loader
+        self.cuda = cuda
 
-    def train_mnist_nn(self):
+    def train_mnist_cnn(self):
         model = self.model
         model.train()
         criterion = self.criterion
         optimizer = self.optimizer
         train_loader = self.train_loader
+        cuda = self.cuda
         # Train data in certain epoch
         train_correct = 0
         for i, data in enumerate(train_loader):
@@ -94,6 +110,9 @@ class RunMnistNN():
                         requires_grad = False)
             train_label = Variable(torch.LongTensor(train_label),
                         requires_grad = False)
+            if cuda:
+                train_input = train_input.cuda()
+                train_label = train_label.cuda()
             # Forward pass: Compute predicted y by passing x to the model
             y_pred = model(train_input)
             # Compute the train_loss with Cross-Entropy loss
@@ -108,12 +127,13 @@ class RunMnistNN():
         train_accuracy = float(train_correct) / len(train_loader.dataset)
         return float(train_loss), train_accuracy
     
-    def test_mnist_nn(self):
+    def test_mnist_cnn(self):
         model = self.model
         model.eval()
         criterion = self.criterion
         optimizer = self.optimizer
         test_loader = self.test_loader
+        cuda = self.cuda
         # Test model accuracy after certain epoch
         test_correct = 0
         for i, data in enumerate(test_loader):
@@ -122,6 +142,9 @@ class RunMnistNN():
             test_label = np.array(test_label)
             test_input = Variable(torch.Tensor(test_input), requires_grad = False)
             test_label = Variable(torch.LongTensor(test_label), requires_grad = False)
+            if cuda:
+                test_input = test_input.cuda()
+                test_label = test_label.cuda()
             # Forward pass: Compute predicted y by passing x to the model
             y_pred = model(test_input)
             test_loss = criterion(y_pred, test_label)
@@ -130,7 +153,7 @@ class RunMnistNN():
         test_accuracy = float(test_correct) / len(test_loader.dataset) 
         return float(test_loss), test_accuracy
 
-class MnistNNPlot():
+class MnistCNNPlot():
     def __init__(self, train_accuracy_rate, 
                 test_accuracy_rate,
                 epoch_num):
@@ -145,15 +168,15 @@ class MnistNNPlot():
         # Plot train and test accuracy rate
         x = range(1, epoch_num + 1)
         plt.plot(x, train_accuracy_rate, 
-                    label = "Mnist-NN-Train-Accuracy-Rate")
+                    label = "Mnist-CNN-Train-Accuracy-Rate")
         plt.plot(x, test_accuracy_rate, 
-                    label = "Mnist-NN-Test-Accuracy-Rate")
+                    label = "Mnist-CNN-Test-Accuracy-Rate")
         plt.xlabel("Epoch Time")
         plt.ylabel("Accuracy Rate")
         plt.xticks(range(0, epoch_num + 1, 5))
-        plt.title("Mnist-NN-Accuracy-Graph")
+        plt.title("Mnist-CNN-Accuracy-Graph")
         plt.legend()
         if os.path.isdir("./img") == False: 
             os.mkdir("./img")
-        plt.savefig("./img/Mnist-NN-Accuracy" + str(epoch_num) + ".png")
+        plt.savefig("./img/Mnist-CNN-Accuracy" + str(epoch_num) + ".png")
         plt.show()

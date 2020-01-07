@@ -13,7 +13,10 @@
     ```
 
     * Run python code
-
+    ```
+    python3 mnist_main.py [options] (--nn, --cnn, --both)
+    ```
+    
 * Naming Convention
     * Class: ClassName
     * Private: PRIVATE_NAME

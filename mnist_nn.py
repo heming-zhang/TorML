@@ -72,8 +72,7 @@ class MnistNNParameter():
         return model, criterion, optimizer
 
 class RunMnistNN():
-    def __init__(self, model, 
-                criterion, optimizer, 
+    def __init__(self, model, criterion, optimizer, 
                 train_loader, test_loader, cuda):
         self.model = model
         self.criterion = criterion
