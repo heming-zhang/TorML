@@ -9,6 +9,7 @@ from mnist_nn import MnistNNParameter
 from mnist_cnn import RunMnistCNN
 from mnist_cnn import MnistCNNPlot
 from mnist_cnn import MnistCNNLoad
+from mnist_cnn import MnistConvImage
 from mnist_cnn import MnistCNNParameter
 
 def parse_file():
@@ -101,6 +102,11 @@ def run_mnist_cnn(cnn_batchsize, cnn_worker,
     MnistCNNPlot(train_accuracy_rate,
                 test_accuracy_rate,
                 cnn_epoch_num).plot()
+    # Make plot for image after 1st conv
+    cnn_batchsize = 1
+    cnn_worker = 4
+    _, one_loader = MnistCNNLoad(cnn_batchsize, cnn_worker).load_data()
+    MnistConvImage(one_loader, cnn_cuda).show_conv_image()
 
 if __name__ == "__main__":
     if os.path.isdir("./mnist") == False:
@@ -120,7 +126,7 @@ if __name__ == "__main__":
     cnn_learning_rate = 0.01
     cnn_momentum = 0.5
     cnn_cuda = True
-    cnn_epoch_num = 50
+    cnn_epoch_num = 2
     # Parse command line arguments
     parser = optparse.OptionParser()
     parser.add_option("--nn", action = "store_const",

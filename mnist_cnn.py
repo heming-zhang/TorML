@@ -53,8 +53,11 @@ class MnistCNN(nn.Module):
     # Use ReLU as activation function
     def forward(self, x):
         x = self.conv1(x)
+        self.after_conv1 = x
         x = self.conv2(x)
+        self.after_conv2 = x
         x = self.conv3(x)
+        self.after_conv3 = x
         x = x.view(x.size(0), -1) # flat (batch_size, 40 * 7 * 7)
         y_pred = self.out(x)
         return y_pred
@@ -179,4 +182,39 @@ class MnistCNNPlot():
         if os.path.isdir("./img") == False: 
             os.mkdir("./img")
         plt.savefig("./img/Mnist-CNN-Accuracy" + str(epoch_num) + ".png")
+        plt.show()
+
+class MnistConvImage():
+    def __init__(self, one_loader, cuda):
+        self.one_loader = one_loader
+        self.cuda = cuda
+
+    def show_conv_image(self):
+        one_loader = self.one_loader
+        cuda = self.cuda
+        model = MnistCNN()
+        if cuda:
+            model = model.cuda()
+        for data in one_loader:
+            conv_image, conv_label = data
+            conv_image = conv_image.type(torch.FloatTensor)
+            conv_label = conv_label.type(torch.FloatTensor)
+            conv_image = Variable(torch.FloatTensor(conv_image),
+                        requires_grad = False)
+            conv_label = Variable(torch.FloatTensor(conv_label),
+                        requires_grad = False)
+            if cuda:
+                conv_image = conv_image.cuda()
+                conv_label = conv_label.cuda()
+            plt.figure(0)
+            plt.imshow((conv_image.squeeze().cpu()), cmap = "gray")
+            output = model(conv_image)
+            for i in range(1, 7):
+                plt.figure(i)
+                plt.title("After conv1 {:d} featured map".format(i))
+                # Show images after first convolution
+                plt.imshow(model.after_conv1.squeeze().detach().cpu()[i - 1],
+                             cmap = "gray")
+                plt.colorbar()
+            break
         plt.show()
